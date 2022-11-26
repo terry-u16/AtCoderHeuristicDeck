@@ -38,20 +38,25 @@ public class RatingTest
 
         var rating = Rating.FromPerformanceList(performanceList);
 
-        Assert.Equal(2918.0, rating.Value, 1);
+        Assert.Equal(2918, rating.Value);
     }
 
     [Fact]
     public void RatingCalculationUnderThresholdTest()
     {
-        var performance = new Performance(120);
-        var innerPerformance = new InnerPerformance(performance);
+        var performances = new[] { 767, 169 }
+            .Select(p => new Performance(p))
+            .Select(p => new InnerPerformance(p));
+
         var performanceList = new ExtendedPerformanceList();
 
-        performanceList = performanceList.Add(ExtendedPerformance.FromPerformance(innerPerformance));
+        foreach (var perf in performances)
+        {
+            performanceList = performanceList.Add(ExtendedPerformance.FromPerformance(perf));
+        }
 
         var rating = Rating.FromPerformanceList(performanceList);
 
-        Assert.Equal(10.0, rating.Value, 1);
+        Assert.Equal(110, rating.Value);
     }
 }
