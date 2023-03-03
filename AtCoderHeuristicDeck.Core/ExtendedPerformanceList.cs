@@ -2,7 +2,7 @@
 
 namespace AtCoderHeuristicDeck.Core;
 
-internal class ExtendedPerformanceList
+public class ExtendedPerformanceList
 {
     private const int MaxCount = 100;
     private readonly ImmutableArray<ExtendedPerformance> _performances;

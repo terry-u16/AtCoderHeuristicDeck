@@ -1,6 +1,6 @@
 ﻿namespace AtCoderHeuristicDeck.Core;
 
-internal readonly struct Rating
+public readonly struct Rating
 {
     public int Value { get; }
 

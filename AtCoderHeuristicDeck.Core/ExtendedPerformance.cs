@@ -1,6 +1,6 @@
 ﻿namespace AtCoderHeuristicDeck.Core;
 
-internal readonly struct ExtendedPerformance : IComparable<ExtendedPerformance>
+public readonly struct ExtendedPerformance : IComparable<ExtendedPerformance>
 {
     public double Value { get; }
 
@@ -14,7 +14,7 @@ internal readonly struct ExtendedPerformance : IComparable<ExtendedPerformance>
         Value = value;
     }
 
-    public static IEnumerable<ExtendedPerformance> FromPerformance(InnerPerformance performance)
+    internal static IEnumerable<ExtendedPerformance> FromPerformance(InnerPerformance performance)
     {
         const double s = 724.4744301;
         const int extensionLength = 100;
