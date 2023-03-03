@@ -1,5 +1,3 @@
-﻿using System.Collections.Immutable;
+﻿namespace AtCoderHeuristicDeck.Core;
 
-namespace AtCoderHeuristicDeck.Core;
-
-public record Statistics(string UserName, int Rating, ImmutableArray<Performance> Performances);
+public record Statistics(string UserName, Rating Rating, ExtendedPerformanceList ExtendedPerformances);

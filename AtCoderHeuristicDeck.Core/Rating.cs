@@ -4,7 +4,7 @@ public readonly struct Rating
 {
     public int Value { get; }
 
-    private Rating(int value)
+    internal Rating(int value)
     {
         if (value < 0)
         {
