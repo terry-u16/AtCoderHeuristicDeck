@@ -26,7 +26,7 @@ public class RatingTest
             1821,
             2898
         }
-        .Select(p => new Performance(p))
+        .Select(p => new Performance(p, ""))
         .Select(p => new InnerPerformance(p));
 
         var performanceList = new ExtendedPerformanceList();
@@ -45,7 +45,7 @@ public class RatingTest
     public void RatingCalculationUnderThresholdTest()
     {
         var performances = new[] { 767, 169 }
-            .Select(p => new Performance(p))
+            .Select(p => new Performance(p, ""))
             .Select(p => new InnerPerformance(p));
 
         var performanceList = new ExtendedPerformanceList();

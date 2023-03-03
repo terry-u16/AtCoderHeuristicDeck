@@ -3,8 +3,9 @@
 public readonly struct ExtendedPerformance : IComparable<ExtendedPerformance>
 {
     public double Value { get; }
+    public string ContestName { get; }
 
-    internal ExtendedPerformance(double value)
+    internal ExtendedPerformance(double value, string contestName)
     {
         if (double.IsNaN(value) || double.IsInfinity(value))
         {
@@ -12,6 +13,7 @@ public readonly struct ExtendedPerformance : IComparable<ExtendedPerformance>
         }
 
         Value = value;
+        ContestName = contestName;
     }
 
     internal static IEnumerable<ExtendedPerformance> FromPerformance(InnerPerformance performance)
@@ -21,7 +23,7 @@ public readonly struct ExtendedPerformance : IComparable<ExtendedPerformance>
 
         for (int i = 1; i <= extensionLength; i++)
         {
-            yield return new ExtendedPerformance(performance.Value - s * Math.Log(i));
+            yield return new ExtendedPerformance(performance.Value - s * Math.Log(i), performance.ContestName);
         }
     }
 

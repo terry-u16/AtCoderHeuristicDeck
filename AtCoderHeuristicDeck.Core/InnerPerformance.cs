@@ -2,7 +2,8 @@
 
 internal readonly struct InnerPerformance
 {
-    internal double Value { get; }
+    public double Value { get; }
+    public string ContestName { get; }
 
     internal InnerPerformance(Performance performance)
     {
@@ -16,6 +17,8 @@ internal readonly struct InnerPerformance
         {
             Value = ratingThreshold * (1 - Math.Log(ratingThreshold / performance.Value));
         }
+
+        ContestName = performance.ContestName;
     }
 
     public override string ToString() => Value.ToString();

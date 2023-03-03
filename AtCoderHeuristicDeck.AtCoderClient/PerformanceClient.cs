@@ -35,7 +35,7 @@ public class PerformanceClient : IStatisticsClient
         }
 
         var rating = ratedResults.Last().NewRating;
-        var performances = ratedResults.Select(result => new Performance(result.Performance)).ToImmutableArray();
+        var performances = ratedResults.Select(result => new Performance(result.Performance, result.ContestName)).ToImmutableArray();
 
         return new Statistics(_userName, rating, performances);
     }
