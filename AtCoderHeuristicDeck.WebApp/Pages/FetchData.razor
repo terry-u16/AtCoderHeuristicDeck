@@ -6,14 +6,14 @@
 
 <h1>レーティング取得テスト</h1>
 
-@if (statistics == null)
+@if (_statistics == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <p>@statistics.UserName</p>
-    <p>@statistics.Rating</p>
+    <p>@_statistics.UserName</p>
+    <p>@_statistics.Rating</p>
     <table class="table">
         <thead>
             <tr>
@@ -22,7 +22,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var perf in statistics.ExtendedPerformances.Performances)
+            @foreach (var perf in _statistics.ExtendedPerformances.Performances)
             {
                 <tr>
                     <td>@perf.Value</td>
@@ -31,13 +31,119 @@ else
             }
         </tbody>
     </table>
+    <svg width="1000" height="1000">
+        @foreach (var rect in _rectangles)
+        {
+            <rect x="@rect.X" y="@rect.Y" width="@rect.Width" height="@rect.Height" fill="gray" stroke="black" stroke-width="1">
+                <title>@($"ExPerf: {rect.ExtendedPerf:0.00}\nRatio: {rect.Ratio * 100:0.00}%\nContestName: {rect.ContestName}")</title>
+            </rect>
+        }
+    </svg>
 }
 
 @code {
-    private Statistics? statistics;
+    private Statistics? _statistics;
+    private Rectangle[] _rectangles;
+
 
     protected override async Task OnInitializedAsync()
     {
-        statistics = await Http.GetFromJsonAsync<Statistics>("api/user/terry_u16");
+        _statistics = await Http.GetFromJsonAsync<Statistics>("api/user/terry_u16");
+        _rectangles = CalcBestRectanbles(_statistics.ExtendedPerformances);
     }
+
+    private Rectangle[] CalcBestRectanbles(ExtendedPerformanceList performances)
+    {
+        const int width = 1000;
+        const int height = 1000;
+        var weightedPerfs = performances.EnumeratePerformanceAndWeights().Select(pair => pair.Item1.Value * pair.Item2).ToArray();
+        var totalPerfs = weightedPerfs.Sum();
+
+        for (int i = 0; i < weightedPerfs.Length; i++)
+        {
+            weightedPerfs[i] *= width * height / totalPerfs;
+        }
+
+        var areaPrefixSum = new double[weightedPerfs.Length + 1];
+
+        for (int i = 0; i < weightedPerfs.Length; i++)
+        {
+            areaPrefixSum[i + 1] = areaPrefixSum[i] + weightedPerfs[i];
+        }
+
+        var dp = new double[weightedPerfs.Length + 1];
+        var from = new int[weightedPerfs.Length + 1];
+        dp.AsSpan().Fill(double.MaxValue / 2);
+        dp[0] = 0;
+
+        for (int i = 0; i < weightedPerfs.Length; i++)
+        {
+            var nextAreaSum = 0.0;
+
+            for (int j = i; j < weightedPerfs.Length; j++)
+            {
+                nextAreaSum += weightedPerfs[j];
+                var currentHeight = nextAreaSum / width;
+                var nextScore = dp[i];
+
+                // アスペクト比の重み付き調和平均っぽい何かを最小化したい
+                for (int k = i; k <= j; k++)
+                {
+                    var currentWidth = weightedPerfs[k] / currentHeight;
+                    var aspect = Math.Max(currentWidth / currentHeight, currentHeight / currentWidth);
+                    nextScore += Math.Sqrt(weightedPerfs[k]) * aspect;
+                }
+
+                if (dp[j + 1] > nextScore)
+                {
+                    dp[j + 1] = nextScore;
+                    from[j + 1] = i;
+                }
+            }
+        }
+
+        // 復元
+        var ranges = new List<(int, int)>();
+        var current = weightedPerfs.Length;
+
+        while (current > 0)
+        {
+            var prev = from[current];
+            ranges.Add((prev, current));
+            current = prev;
+        }
+
+        ranges.Reverse();
+        var rectangles = new Rectangle[weightedPerfs.Length];
+        var heightPrefixSum = 0.0;
+
+        foreach (var (prev, next) in ranges)
+        {
+            var currentAreaSum = 0.0;
+
+            for (int i = prev; i < next; i++)
+            {
+                currentAreaSum += weightedPerfs[i];
+            }
+
+            var currentHeight = currentAreaSum / width;
+            var x = 0.0;
+
+            for (int i = prev; i < next; i++)
+            {
+                var dx = weightedPerfs[i] / currentHeight;
+                var ratio = weightedPerfs[i] / (width * height);
+                var contestName = performances.Performances[i].ContestName;
+                var perf = performances.Performances[i].Value;
+                rectangles[i] = new Rectangle(x, heightPrefixSum, dx, currentHeight, perf, ratio, contestName);
+                x += dx;
+            }
+
+            heightPrefixSum += currentHeight;
+        }
+
+        return rectangles;
+    }
+
+    private readonly record struct Rectangle(double X, double Y, double Width, double Height, double ExtendedPerf, double Ratio, string ContestName);
 }
