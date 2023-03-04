@@ -9,12 +9,12 @@ namespace AtCoderHeuristicDeck.Api
     public class User
     {
         private readonly ILogger _logger;
-        private readonly IContestHistoryClient _contestHistoryClient;
+        private readonly DeckService _deckService;
 
-        public User(ILoggerFactory loggerFactory, IContestHistoryClient contestHistoryClient)
+        public User(ILoggerFactory loggerFactory, DeckService deckService)
         {
             _logger = loggerFactory.CreateLogger<User>();
-            _contestHistoryClient = contestHistoryClient;
+            _deckService = deckService;
         }
 
         [Function("User")]
@@ -25,9 +25,9 @@ namespace AtCoderHeuristicDeck.Api
                 await Console.Out.WriteLineAsync("waiting...");
                 _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-                var history = await _contestHistoryClient.GetContestHistoryAsync(userId);
+                var deck = await _deckService.GetExtendedPerformancesAsync(userId);
                 var response = req.CreateResponse(HttpStatusCode.OK);
-                await response.WriteAsJsonAsync(history);
+                await response.WriteAsJsonAsync(deck);
                 return response;
             }
             catch (LoadingStatisticsFailureException)

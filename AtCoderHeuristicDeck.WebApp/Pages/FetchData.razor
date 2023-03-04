@@ -6,14 +6,14 @@
 
 <h1>レーティング取得テスト</h1>
 
-@if (history == null)
+@if (statistics == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <p>@history.UserName</p>
-    <p>@history.Rating</p>
+    <p>@statistics.UserName</p>
+    <p>@statistics.Rating</p>
     <table class="table">
         <thead>
             <tr>
@@ -22,7 +22,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var perf in history.Performances)
+            @foreach (var perf in statistics.ExtendedPerformances.Performances)
             {
                 <tr>
                     <td>@perf.Value</td>
@@ -34,10 +34,10 @@ else
 }
 
 @code {
-    private ContestHistory? history;
+    private Statistics? statistics;
 
     protected override async Task OnInitializedAsync()
     {
-        history = await Http.GetFromJsonAsync<ContestHistory>("api/user/terry_u16");
+        statistics = await Http.GetFromJsonAsync<Statistics>("api/user/terry_u16");
     }
 }

@@ -19,7 +19,7 @@ public class DeckService
         {
             var innerPerformance = new InnerPerformance(performance);
             var extendedPerformance = ExtendedPerformance.FromPerformance(innerPerformance);
-            extendedPerformanceList.Add(extendedPerformance);
+            extendedPerformanceList = extendedPerformanceList.Add(extendedPerformance);
         }
 
         return new Statistics(history.UserName, history.Rating, extendedPerformanceList);

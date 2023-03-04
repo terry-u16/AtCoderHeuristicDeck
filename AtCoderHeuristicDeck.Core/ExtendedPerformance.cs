@@ -1,11 +1,14 @@
-﻿namespace AtCoderHeuristicDeck.Core;
+﻿using System.Text.Json.Serialization;
+
+namespace AtCoderHeuristicDeck.Core;
 
 public readonly struct ExtendedPerformance : IComparable<ExtendedPerformance>
 {
     public double Value { get; }
     public string ContestName { get; }
 
-    internal ExtendedPerformance(double value, string contestName)
+    [JsonConstructor]
+    public ExtendedPerformance(double value, string contestName)
     {
         if (double.IsNaN(value) || double.IsInfinity(value))
         {

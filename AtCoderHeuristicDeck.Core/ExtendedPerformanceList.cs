@@ -1,17 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Immutable;
+using System.Text.Json.Serialization;
 
 namespace AtCoderHeuristicDeck.Core;
 
-public class ExtendedPerformanceList : IEnumerable<ExtendedPerformance>
+public class ExtendedPerformanceList
 {
     private const int MaxCount = 100;
-    private readonly ImmutableArray<ExtendedPerformance> _performances;
-    internal IEnumerable<ExtendedPerformance> Performances => _performances;
+
+    public ImmutableArray<ExtendedPerformance> Performances { get; }
 
     public ExtendedPerformanceList()
     {
-        _performances = ImmutableArray<ExtendedPerformance>.Empty;
+        Performances = ImmutableArray<ExtendedPerformance>.Empty;
+    }
+
+    [JsonConstructor]
+    public ExtendedPerformanceList(ImmutableArray<ExtendedPerformance> performances)
+    {
+        Performances = performances;
     }
 
     private ExtendedPerformanceList(ImmutableArray<ExtendedPerformance>.Builder builder)
@@ -23,12 +30,12 @@ public class ExtendedPerformanceList : IEnumerable<ExtendedPerformance>
             builder.RemoveAt(builder.Count - 1);
         }
 
-        _performances = builder.ToImmutable();
+        Performances = builder.ToImmutable();
     }
 
     public ExtendedPerformanceList Add(ExtendedPerformance performance)
     {
-        var builder = _performances.ToBuilder();
+        var builder = Performances.ToBuilder();
         builder.Add(performance);
         return new ExtendedPerformanceList(builder);
     }
@@ -36,12 +43,8 @@ public class ExtendedPerformanceList : IEnumerable<ExtendedPerformance>
 
     public ExtendedPerformanceList Add(IEnumerable<ExtendedPerformance> performances)
     {
-        var builder = _performances.ToBuilder();
+        var builder = Performances.ToBuilder();
         builder.AddRange(performances);
         return new ExtendedPerformanceList(builder);
     }
-
-    public IEnumerator<ExtendedPerformance> GetEnumerator() => Performances.AsEnumerable().GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

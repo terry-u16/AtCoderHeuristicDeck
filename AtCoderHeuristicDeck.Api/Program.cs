@@ -7,6 +7,7 @@ var host = new HostBuilder()
     .ConfigureServices(s =>
     {
         s.AddScoped<IContestHistoryClient, AtCoderContestHistoryClient>();
+        s.AddScoped<DeckService>();
     })
     .Build();
 
