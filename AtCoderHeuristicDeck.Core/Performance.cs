@@ -1,4 +1,6 @@
-﻿namespace AtCoderHeuristicDeck.Core;
+﻿using System.Text.Json.Serialization;
+
+namespace AtCoderHeuristicDeck.Core;
 
 public readonly struct Performance
 {
@@ -6,6 +8,7 @@ public readonly struct Performance
 
     public string ContestName { get; }
 
+    [JsonConstructor]
     public Performance(int value, string contestName)
     {
         Value = value;

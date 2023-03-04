@@ -1,35 +1,32 @@
 ﻿@page "/fetchdata"
+@using AtCoderHeuristicDeck.Core
 @inject HttpClient Http
 
-<PageTitle>Weather forecast</PageTitle>
+<PageTitle>レーティング取得テスト</PageTitle>
 
-<h1>Weather forecast</h1>
+<h1>レーティング取得テスト</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (forecasts == null)
+@if (history == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
+    <p>@history.UserName</p>
+    <p>@history.Rating</p>
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>perf</th>
+                <th>contest</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var perf in history.Performances)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@perf.Value</td>
+                    <td>@perf.ContestName</td>
                 </tr>
             }
         </tbody>
@@ -37,21 +34,10 @@ else
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private ContestHistory? history;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-    }
-
-    public class WeatherForecast
-    {
-        public DateOnly Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        history = await Http.GetFromJsonAsync<ContestHistory>("api/user/terry_u16");
     }
 }

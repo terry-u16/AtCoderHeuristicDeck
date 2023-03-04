@@ -1,10 +1,13 @@
-﻿namespace AtCoderHeuristicDeck.Core;
+﻿using System.Text.Json.Serialization;
+
+namespace AtCoderHeuristicDeck.Core;
 
 public readonly struct Rating
 {
     public int Value { get; }
 
-    internal Rating(int value)
+    [JsonConstructor]
+    public Rating(int value)
     {
         if (value < 0)
         {
