@@ -19,17 +19,14 @@ public readonly struct Rating
 
     internal static Rating FromPerformanceList(ExtendedPerformanceList performances)
     {
-        const double r = 0.8271973364;
         const double ratingThreshold = 400;
         var numerator = 0.0;
         var denomnator = 0.0;
-        var powR = 1.0;
 
-        foreach (var perf in performances.Performances)
+        foreach (var (perf, weight) in performances.EnumeratePerformanceAndWeights())
         {
-            powR *= r;
-            numerator += perf.Value * powR;
-            denomnator += powR;
+            numerator += perf.Value * weight;
+            denomnator += weight;
         }
 
         var innerRating = numerator / denomnator;

@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
 namespace AtCoderHeuristicDeck.Core;
@@ -46,5 +45,17 @@ public class ExtendedPerformanceList
         var builder = Performances.ToBuilder();
         builder.AddRange(performances);
         return new ExtendedPerformanceList(builder);
+    }
+
+    public IEnumerable<(ExtendedPerformance, double)> EnumeratePerformanceAndWeights()
+    {
+        const double r = 0.8271973364;
+        var powR = 1.0;
+
+        foreach (var perf in Performances)
+        {
+            powR *= r;
+            yield return (perf, powR);
+        }
     }
 }
