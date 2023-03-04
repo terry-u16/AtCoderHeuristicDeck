@@ -31,14 +31,16 @@ else
             }
         </tbody>
     </table>
-    <svg width="1000" height="1000">
-        @foreach (var rect in _rectangles)
-        {
-            <rect x="@rect.X" y="@rect.Y" width="@rect.Width" height="@rect.Height" fill="gray" stroke="black" stroke-width="1">
-                <title>@($"ExPerf: {rect.ExtendedPerf:0.00}\nRatio: {rect.Ratio * 100:0.00}%\nContestName: {rect.ContestName}")</title>
-            </rect>
-        }
-    </svg>
+    <p>
+        <svg width="1000" height="1000">
+            @foreach (var rect in _rectangles)
+            {
+                <rect x="@rect.X" y="@rect.Y" width="@rect.Width" height="@rect.Height" fill="@rect.Color.ToHexString()" stroke="black" stroke-width="1">
+                    <title>@($"ExPerf: {rect.ExtendedPerf:0.00}\nRatio: {rect.Ratio * 100:0.00}%\nContestName: {rect.ContestName}")</title>
+                </rect>
+            }
+        </svg>
+    </p>
 }
 
 @code {
@@ -135,7 +137,8 @@ else
                 var ratio = weightedPerfs[i] / (width * height);
                 var contestName = performances.Performances[i].ContestName;
                 var perf = performances.Performances[i].Value;
-                rectangles[i] = new Rectangle(x, heightPrefixSum, dx, currentHeight, perf, ratio, contestName);
+                var color = GetColor(perf);
+                rectangles[i] = new Rectangle(x, heightPrefixSum, dx, currentHeight, perf, ratio, contestName, color);
                 x += dx;
             }
 
@@ -145,5 +148,93 @@ else
         return rectangles;
     }
 
-    private readonly record struct Rectangle(double X, double Y, double Width, double Height, double ExtendedPerf, double Ratio, string ContestName);
+    private Color GetColor(double perf)
+    {
+        if (perf >= 3200)
+        {
+            return new Color(0xff, 0x00, 0x00);
+        }
+
+        var floorPerf = (int)perf / 400 * 400;
+        Color ceilColor;
+
+        if (perf >= 2800)
+        {
+            ceilColor = new Color(0xff, 0x00, 0x00);
+        }
+        else if (perf >= 2400)
+        {
+            ceilColor = new Color(0xff, 0x80, 0x00);
+        }
+        else if (perf >= 2000)
+        {
+            ceilColor = new Color(0xc0, 0xc0, 0x00);
+        }
+        else if (perf >= 1600)
+        {
+            ceilColor = new Color(0x00, 0x00, 0xff);
+        }
+        else if (perf >= 1200)
+        {
+            ceilColor = new Color(0x00, 0xc0, 0xc0);
+        }
+        else if (perf >= 800)
+        {
+            ceilColor = new Color(0x00, 0x80, 0x00);
+        }
+        else if (perf >= 400)
+        {
+            ceilColor = new Color(0x80, 0x40, 0x00);
+        }
+        else
+        {
+            ceilColor = new Color(0x80, 0x80, 0x80);
+        }
+
+        var white = new Color(0xff, 0xff, 0xff);
+        var alpha = (double)(perf - floorPerf) / 400 * 0.7 + 0.3;
+
+        return ceilColor * alpha + white * (1 - alpha);
+    }
+
+    private readonly struct Color
+    {
+        private readonly double _r;
+        private readonly double _g;
+        private readonly double _b;
+
+        public Color(byte r, byte g, byte b)
+        {
+            _r = (double)r / 255;
+            _g = (double)g / 255;
+            _b = (double)b / 255;
+        }
+
+        private Color(double r, double g, double b)
+        {
+            _r = r;
+            _g = g;
+            _b = b;
+        }
+
+        public static Color operator *(Color c, double v)
+        {
+            return new Color(c._r * v, c._g * v, c._b * v);
+        }
+
+        public static Color operator +(Color c1, Color c2)
+        {
+            return new Color(c1._r + c2._r, c1._g + c2._g, c1._b + c2._b);
+        }
+
+        public string ToHexString()
+        {
+            var r = Math.Clamp((int)Math.Round(_r * 255), 0x00, 0xff);
+            var g = Math.Clamp((int)Math.Round(_g * 255), 0x00, 0xff);
+            var b = Math.Clamp((int)Math.Round(_b * 255), 0x00, 0xff);
+            return $"#{r.ToString("x2")}{g.ToString("x2")}{b.ToString("x2")}";
+        }
+    }
+
+    private record Rectangle(double X, double Y, double Width, double Height, double ExtendedPerf, double Ratio, string ContestName, Color Color);
 }
