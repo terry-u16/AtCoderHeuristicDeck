@@ -1,8 +1,9 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections;
+using System.Collections.Immutable;
 
 namespace AtCoderHeuristicDeck.Core;
 
-public class ExtendedPerformanceList
+public class ExtendedPerformanceList : IEnumerable<ExtendedPerformance>
 {
     private const int MaxCount = 100;
     private readonly ImmutableArray<ExtendedPerformance> _performances;
@@ -39,4 +40,8 @@ public class ExtendedPerformanceList
         builder.AddRange(performances);
         return new ExtendedPerformanceList(builder);
     }
+
+    public IEnumerator<ExtendedPerformance> GetEnumerator() => Performances.AsEnumerable().GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

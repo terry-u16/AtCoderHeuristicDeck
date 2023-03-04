@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace AtCoderHeuristicDeck.Core;
@@ -7,7 +8,7 @@ public class AtCoderContestHistoryClient : IContestHistoryClient
 {
     private readonly HttpClient _httpClient;
 
-    public AtCoderContestHistoryClient(string userName)
+    public AtCoderContestHistoryClient()
     {
         _httpClient = new HttpClient();
     }
@@ -22,6 +23,8 @@ public class AtCoderContestHistoryClient : IContestHistoryClient
         try
         {
             var url = $"https://atcoder.jp/users/{userName}/history/json?contestType=heuristic";
+            var res = await _httpClient.GetAsync(url);
+
             var json = await _httpClient.GetStringAsync(url);
             var results = JsonSerializer.Deserialize<ContestResult[]>(json) ?? Array.Empty<ContestResult>();
 
@@ -39,6 +42,7 @@ public class AtCoderContestHistoryClient : IContestHistoryClient
         }
         catch (HttpRequestException ex)
         {
+            Debug.WriteLine(ex.Message);
             throw new LoadingStatisticsFailureException($"ユーザー {userName} が見つかりませんでした。", ex);
         }
     }
