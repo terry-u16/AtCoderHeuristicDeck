@@ -35,7 +35,7 @@ else
         <svg width="1000" height="1000">
             @foreach (var rect in _rectangles)
             {
-                <rect x="@rect.X" y="@rect.Y" width="@rect.Width" height="@rect.Height" fill="@rect.Color.ToHexString()" stroke="black" stroke-width="1">
+                <rect x="@rect.X" y="@rect.Y" width="@rect.Width" height="@rect.Height" fill="@rect.Color.ToHexString()" stroke="black" stroke-width="0.5">
                     <title>@($"ExPerf: {rect.ExtendedPerf:0.00}\nRatio: {rect.Ratio * 100:0.00}%\nContestName: {rect.ContestName}")</title>
                 </rect>
             }
@@ -58,7 +58,13 @@ else
     {
         const int width = 1000;
         const int height = 1000;
-        var weightedPerfs = performances.EnumeratePerformanceAndWeights().Select(pair => pair.Item1.Value * pair.Item2).ToArray();
+        const int minHeight = 2;
+        var weightedPerfs = performances.EnumeratePerformanceAndWeights().Select(pair => 
+            {
+                // 本当はこの寄与度は正しくないが、妥協
+                var (perf, weight) = pair;
+                return ToPositivePerf(perf.Value) * weight;
+            }).ToArray();
         var totalPerfs = weightedPerfs.Sum();
 
         for (int i = 0; i < weightedPerfs.Length; i++)
@@ -88,12 +94,17 @@ else
                 var currentHeight = nextAreaSum / width;
                 var nextScore = dp[i];
 
+                if (currentHeight < minHeight)
+                {
+                    continue;
+                }
+
                 // アスペクト比の重み付き調和平均っぽい何かを最小化したい
                 for (int k = i; k <= j; k++)
                 {
                     var currentWidth = weightedPerfs[k] / currentHeight;
                     var aspect = Math.Max(currentWidth / currentHeight, currentHeight / currentWidth);
-                    nextScore += Math.Sqrt(weightedPerfs[k]) * aspect;
+                    nextScore += weightedPerfs[k] * aspect;
                 }
 
                 if (dp[j + 1] > nextScore)
@@ -137,7 +148,7 @@ else
                 var ratio = weightedPerfs[i] / (width * height);
                 var contestName = performances.Performances[i].ContestName;
                 var perf = performances.Performances[i].Value;
-                var color = GetColor(perf);
+                var color = GetColor(ToPositivePerf(perf));
                 rectangles[i] = new Rectangle(x, heightPrefixSum, dx, currentHeight, perf, ratio, contestName, color);
                 x += dx;
             }
@@ -148,6 +159,20 @@ else
         return rectangles;
     }
 
+    private double ToPositivePerf(double perf)
+    {
+        const int ratingThreshold = 400;
+
+        if (perf >= 400)
+        {
+            return perf;
+        }
+        else
+        {
+            return ratingThreshold / Math.Exp((ratingThreshold - perf) / ratingThreshold);
+        }
+    }
+
     private Color GetColor(double perf)
     {
         if (perf >= 3200)
@@ -156,43 +181,20 @@ else
         }
 
         var floorPerf = (int)perf / 400 * 400;
-        Color ceilColor;
-
-        if (perf >= 2800)
+        var ceilColor = perf switch
         {
-            ceilColor = new Color(0xff, 0x00, 0x00);
-        }
-        else if (perf >= 2400)
-        {
-            ceilColor = new Color(0xff, 0x80, 0x00);
-        }
-        else if (perf >= 2000)
-        {
-            ceilColor = new Color(0xc0, 0xc0, 0x00);
-        }
-        else if (perf >= 1600)
-        {
-            ceilColor = new Color(0x00, 0x00, 0xff);
-        }
-        else if (perf >= 1200)
-        {
-            ceilColor = new Color(0x00, 0xc0, 0xc0);
-        }
-        else if (perf >= 800)
-        {
-            ceilColor = new Color(0x00, 0x80, 0x00);
-        }
-        else if (perf >= 400)
-        {
-            ceilColor = new Color(0x80, 0x40, 0x00);
-        }
-        else
-        {
-            ceilColor = new Color(0x80, 0x80, 0x80);
-        }
+            >= 2800 => new Color(0xff, 0x00, 0x00),
+            >= 2400 => new Color(0xff, 0x80, 0x00),
+            >= 2000 => new Color(0xc0, 0xc0, 0x00),
+            >= 1600 => new Color(0x00, 0x00, 0xff),
+            >= 1200 => new Color(0x00, 0xc0, 0xc0),
+            >= 800 => new Color(0x00, 0x80, 0x00),
+            >= 400 => new Color(0x80, 0x40, 0x00),
+            _ => new Color(0x80, 0x80, 0x80)
+        };
 
         var white = new Color(0xff, 0xff, 0xff);
-        var alpha = (double)(perf - floorPerf) / 400 * 0.7 + 0.3;
+        var alpha = (double)(perf - floorPerf) / 400 * 0.6 + 0.4;
 
         return ceilColor * alpha + white * (1 - alpha);
     }
